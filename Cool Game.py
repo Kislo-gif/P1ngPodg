@@ -9,7 +9,7 @@ class GameSprite(sprite.Sprite):
         self.image = transform.scale(image.load(player_image), (w, h))
         self.speed = player_speed
         self.speed_x = player_speed
-        self.speed_y = player_speed
+        self.speed_y = int(player_speed/2)
         self.rect = self.image.get_rect()
         self.rect.x = player_x
         self.rect.y = player_y
@@ -38,9 +38,24 @@ class Player2(GameSprite):
 
 class Ball(GameSprite):
     def update(self):
-          self.rect.y+=self.speed_x
-          self.rect.x+=self.speed_y
+        global score1
+        global score2
+        self.rect.x+=self.speed_x
+        self.rect.y+=self.speed_y
+        if self.rect.y<1 or self.rect.y>549:
+            self.speed_y*=-1
+        if sprite.collide_rect(ball, p1) or sprite.collide_rect(ball, p2):
+            self.speed_x*=-1
+        if self.rect.x<1:
+            score2+=1
+            self.rect.x=int(800/2)
+            self.rect.y=int(600/2)
+        if self.rect.x>800-1:
+            score1+=1
+            self.rect.x=int(800/2)
+            self.rect.y=int(600/2)
 
+            
 #Окно игры
 window = display.set_mode((800,600))
 display.set_caption('Cool Game')
@@ -48,6 +63,7 @@ display.set_caption('Cool Game')
 bg = transform.scale(image.load('bg.jpg'), (800,600))
 
 #Переменные
+pong_sound ="pong.ogg"
 clock = time.Clock()
 FPS = 74
 font.init()
@@ -61,14 +77,13 @@ ball = "ball.png"
 p1 = Player1(racket_image, 10, 100, 10, 250, 5)
 p2 = Player2(racket_image, 10, 100, 780, 250, 5)
 ball = Ball(ball, 50, 50, 250, 275, 5)
+score1 = 0
+score2 = 0
 
-
-'''#Музыка
 mixer.init()
-#mixer.music.load('doom.ogg')
-#mixer.music.play()
-fire = mixer.Sound('fire.ogg')'''
+pong = mixer.Sound('pong.ogg')
 
+font.init()
 
 while run:
 #Завершение игры
@@ -85,6 +100,23 @@ while run:
         p2.reset()
         ball.update()
         ball.reset()
+        
+        text_score1 = font.SysFont('Arial', 70).render(str(score1), 1, (255,255,255))
+        text_score2 = font.SysFont('Arial', 70).render(str(score2), 1, (255,255,255))
+        window.blit(text_score1, (100, 160))
+        window.blit(text_score2, (570, 160))
+        if score1 == 5:
+            text_score1 = font.SysFont('Arial', 70).render('WIN', 1, (255,255,255))
+            text_score2 = font.SysFont('Arial', 70).render('LOSE', 1, (255,255,255))
+            window.blit(text_score1, (100, 160))
+            window.blit(text_score2, (570, 160))
+            finish = True
+        if score2 == 5:
+            text_score1 = font.SysFont('Arial', 70).render('LOSE', 1, (255,255,255))
+            text_score2 = font.         SysFont('Arial', 70).render('WIN', 1, (255,255,255))
+            window.blit(text_score1, (100, 160))
+            window.blit(text_score2, (570, 160))
+            finish = True
     display.update()
     clock.tick(FPS)
     new_time = timer()
